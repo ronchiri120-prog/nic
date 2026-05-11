@@ -1,0 +1,32 @@
+/* settings.css — page-specific styles for settings.html */
+
+.product-table-wrap { overflow-x: auto; }
+.rate-col-plat      { color: #7c3aed; font-weight: 600; }
+.rate-col-gold      { color: #92400e; font-weight: 600; }
+.rate-col-arr       { color: var(--red); font-weight: 600; }
+.at-conn-row        { display: flex; justify-content: space-between; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.at-conn-row:last-child { border-bottom: none; }
+.daraja-status-ok   { color: var(--brand); font-size: 12px; margin-top: 10px; }
+.daraja-status-test { color: var(--gold);  font-size: 12px; margin-top: 10px; }
+.sms-tpl-char-count { text-align: right; font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+/* Inline edit inputs for products */
+.inline-edit {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  background: var(--bg1);
+  color: var(--text1);
+  transition: all 0.2s;
+}
+.inline-edit:hover {
+  border-color: var(--brand);
+  background: var(--bg2);
+}
+.inline-edit:focus {
+  outline: none;
+  border-color: var(--brand);
+  background: var(--bg2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}

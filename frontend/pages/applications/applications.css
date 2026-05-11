@@ -1,0 +1,9 @@
+/* applications.css — page-specific styles for applications.html */
+
+.app-score-cell     { display: flex; align-items: center; gap: 8px; }
+.app-score-track    { background: var(--surface2); border-radius: 4px; height: 6px; width: 60px; overflow: hidden; }
+.app-score-fill     { height: 100%; }
+.app-score-fill-high{ background: var(--brand); }
+.app-score-fill-mid { background: var(--gold); }
+.app-score-fill-low { background: var(--red); }
+.app-score-num      { font-family: 'JetBrains Mono', monospace; font-size: 11px; }

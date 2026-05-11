@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Dashboard</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Overview</div>
+      </div>
+      <div class="topbar-right" id="topbarActions">
+        <span class="badge badge-active" id="dash-date"></span>
+        <button class="btn btn-ghost" onclick="loadDashboard()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- Greeting -->
+      <div class="dash-greeting animate-fadeup">
+        <h1 class="page-heading" id="dash-greeting">Loading…</h1>
+        <p class="page-subheading" id="dash-today"></p>
+      </div>
+
+      <!-- KPI Row 1 — Portfolio health -->
+      <div class="kpi-grid kpi-grid-5 animate-fadeup stagger-1 mb-16">
+        <div class="kpi-card kc-blue grad">
+          <div class="kpi-label">Portfolio Size</div>
+          <div class="kpi-value" id="kpi-portfolio">—</div>
+          <div class="kpi-delta">Active outstanding</div>
+        </div>
+        <div class="kpi-card kc-green grad">
+          <div class="kpi-label">Active Loans</div>
+          <div class="kpi-value" id="kpi-active">—</div>
+          <div class="kpi-delta" id="kpi-total-loans"></div>
+        </div>
+        <div class="kpi-card kc-gold grad">
+          <div class="kpi-label">Pending Approval</div>
+          <div class="kpi-value" id="kpi-pending">—</div>
+          <div class="kpi-delta">Awaiting review</div>
+        </div>
+        <div class="kpi-card kc-red grad">
+          <div class="kpi-label">Defaults</div>
+          <div class="kpi-value" id="kpi-default">—</div>
+          <div class="kpi-delta">Immediate follow-up</div>
+        </div>
+        <div class="kpi-card kc-black grad">
+          <div class="kpi-label">PAR 30</div>
+          <div class="kpi-value" id="kpi-par30">—</div>
+          <div class="kpi-delta" id="kpi-par30-ratio"></div>
+        </div>
+      </div>
+
+      <!-- PAR risk bar -->
+      <div class="animate-fadeup stagger-2 mb-20">
+        <div class="d-flex justify-between text-sm text-dim mb-8">
+          <span>Portfolio at Risk (PAR 30)</span>
+          <span>Healthy &lt;5% · Caution 5–10% · Critical &gt;10%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="risk-bar-fill" class="pw-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- KPI Row 2 — This month -->
+      <div class="kpi-grid kpi-grid-5 animate-fadeup stagger-2 mb-20">
+        <div class="kpi-card kc-green grad">
+          <div class="kpi-label">MTD Disbursed</div>
+          <div class="kpi-value" id="kpi-disb">—</div>
+          <div class="kpi-delta" id="kpi-disb-count"></div>
+        </div>
+        <div class="kpi-card kc-teal grad">
+          <div class="kpi-label">MTD Collected</div>
+          <div class="kpi-value" id="kpi-coll">—</div>
+          <div class="kpi-delta" id="kpi-coll-rate"></div>
+        </div>
+        <div class="kpi-card kc-blue grad">
+          <div class="kpi-label">New Customers</div>
+          <div class="kpi-value" id="kpi-new-cust">—</div>
+          <div class="kpi-delta">This month</div>
+        </div>
+        <div class="kpi-card kc-gold grad">
+          <div class="kpi-label">Total Customers</div>
+          <div class="kpi-value" id="kpi-total-cust">—</div>
+          <div class="kpi-delta">Active</div>
+        </div>
+        <div class="kpi-card kc-red grad">
+          <div class="kpi-label">Written Off</div>
+          <div class="kpi-value" id="kpi-written-off">—</div>
+          <div class="kpi-delta">This month</div>
+        </div>
+      </div>
+
+      <!-- Bottom panels -->
+      <div class="grid-2 animate-fadeup stagger-3">
+
+        <!-- Recent loans -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📋 Recent Loan Activity</div>
+            <a href="../loans/loans.html" class="text-sm text-brand">View all →</a>
+          </div>
+          <div class="panel-body-bare">
+            <table class="data-table">
+              <thead><tr><th>Loan ID</th><th>Customer</th><th>Principal</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="recent-loans"><tr><td colspan="5" class="td-loading">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Branch performance -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">🏢 Branch Performance</div>
+            <a href="../performance/performance.html" class="text-sm text-brand">Full report →</a>
+          </div>
+          <div class="panel-body" id="branch-perf">
+            <div class="td-loading">Loading…</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script>
+    // Set today's date
+    document.getElementById('dash-date').textContent =
+      new Date().toLocaleDateString('en-KE', {weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('dash-today').textContent =
+      'Here\'s your portfolio overview for today';
+  </script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

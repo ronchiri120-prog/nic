@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="notifications.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Notifications</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> SMS &amp; Email Logs</div>
+      </div>
+      <div class="topbar-right" id="topbarActions">
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search phone, loan…" oninput="onSearch(this)">
+        </div>
+      </div>
+    </div>
+    <div class="content-area" id="pageContent"></div>
+  </div>
+  <div id="toast-container"></div>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="notifications.js"></script>
+</body>
+</html>

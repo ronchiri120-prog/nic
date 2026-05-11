@@ -1,0 +1,278 @@
+# ═══════════════════════════════════════════════════════════
+#  QuickLender — GitHub Actions CI/CD Pipeline
+#  Triggers: push to main/develop, PRs to main
+# ═══════════════════════════════════════════════════════════
+
+name: QuickLender CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  DJANGO_ENV: "development"
+  SECRET_KEY: "ci-test-secret-key-not-for-production-xK9mP2nQ8vR5tW3y"
+  DB_NAME: quicklender_test
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  DB_HOST: localhost
+  DB_PORT: "5432"
+  REDIS_URL: "redis://localhost:6379/0"
+
+jobs:
+  # ─── 1. Lint & Type Check ──────────────────────────────
+  lint:
+    name: Lint & Code Quality
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install lint tools
+        run: pip install flake8 isort black bandit
+
+      - name: Flake8 (style & errors)
+        run: flake8 backend/ --max-line-length=120 --exclude=migrations,venv --count --statistics
+
+      - name: isort (import ordering)
+        run: isort backend/ --check-only --skip migrations
+
+      - name: Bandit (security scan)
+        run: bandit -r backend/apps/ -ll -x tests
+
+  # ─── 2. Backend Tests ──────────────────────────────────
+  test-backend:
+    name: Django Tests + Coverage
+    runs-on: ubuntu-22.04
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB:       quicklender_test
+          POSTGRES_USER:     postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-django coverage pytest-cov factory-boy
+
+      - name: Run migrations
+        run: |
+          cd backend
+          python manage.py migrate --noinput
+
+      - name: Seed test data
+        run: |
+          cd backend
+          python manage.py seed_demo_data
+
+      - name: Run tests with coverage
+        run: |
+          cd backend
+          pytest --cov=apps --cov-report=xml --cov-report=term-missing \
+                 --cov-fail-under=70 -v
+        env:
+          DJANGO_SETTINGS_MODULE: quicklender_project.settings
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: backend/coverage.xml
+          flags: backend
+        continue-on-error: true
+
+  # ─── 3. Frontend Validation ────────────────────────────
+  test-frontend:
+    name: Frontend Validation
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate HTML files
+        run: |
+          find frontend/pages -name "*.html" | while read f; do
+            python3 -c "
+          import sys
+          from html.parser import HTMLParser
+          class V(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.errors = []
+          p = V()
+          try:
+              p.feed(open('$f').read())
+              print('  OK:', '$f')
+          except Exception as e:
+              print('  ERR:', '$f', str(e))
+              sys.exit(1)
+            "
+          done
+
+      - name: Check JS files exist for all pages
+        run: |
+          for page in login dashboard loans customers payments mpesa staff settings; do
+            for ext in html css js; do
+              test -f "frontend/pages/$page/$page.$ext" && echo "✓ $page.$ext" || \
+              (echo "✗ MISSING: $page.$ext" && exit 1)
+            done
+          done
+
+      - name: Validate API endpoint references
+        run: |
+          python3 << 'PYEOF'
+          import os, re
+          valid = {'login','logout','me','refreshToken','changePassword','dashStats',
+                   'users','createUser','updateUser','customers','customer','createCustomer',
+                   'updateCustomer','customerLoans','blacklistCust','loanProducts','loans',
+                   'loan','createLoan','approveLoan','rejectLoan','disburseLoan','defaultLoan',
+                   'payments','createPayment','stkPush','mpesaTxns','branches','branch',
+                   'createBranch','reportLoans','reportBranches','reportIndividual',
+                   'reportDefaulters','reportDormant','allocations','softReshuffle',
+                   'hardReshuffle','assets','createAsset'}
+          issues = []
+          for root, dirs, files in os.walk('frontend/pages'):
+              for f in files:
+                  if not f.endswith('.js'): continue
+                  path = os.path.join(root, f)
+                  calls = re.findall(r'API\.(\w+)\(', open(path).read())
+                  for c in calls:
+                      if c not in valid:
+                          issues.append(f'{path}: API.{c}() not in endpoint map')
+          if issues:
+              for i in issues: print('ERROR:', i)
+              exit(1)
+          print(f'✓ All API calls valid ({len(set(c for c in []))} endpoints)')
+          PYEOF
+
+  # ─── 4. Security Scan ──────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Safety (dependency vulnerabilities)
+        run: |
+          pip install safety
+          safety check -r backend/requirements.txt --json || true
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Fail if any real credentials are found in code
+          if grep -r "MPESA_CONSUMER_SECRET\s*=\s*['\"][^'\"]\+" backend/apps/ 2>/dev/null; then
+            echo "ERROR: Hardcoded M-Pesa secret found!"
+            exit 1
+          fi
+          echo "✓ No hardcoded secrets found"
+
+  # ─── 5. Docker Build ───────────────────────────────────
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-22.04
+    needs: [test-backend, test-frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          push: false
+          tags: quicklender-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+  # ─── 6. Deploy to Production (main branch only) ────────
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-22.04
+    needs: [docker-build, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+              "cd /var/www/quicklender && sudo ./deployment/scripts/deploy.sh main"
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
+                 https://${{ secrets.DEPLOY_HOST }}/health/)
+          echo "Health check: HTTP $HTTP"
+          [ "$HTTP" = "200" ] || exit 1
+
+      - name: Notify Slack on success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: |
+            ✅ QuickLender deployed to production
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "❌ QuickLender deployment FAILED — ${{ github.sha }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true

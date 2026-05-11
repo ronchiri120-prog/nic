@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM - QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">CRM - Customer Interactions</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Collections · CRM</div>
+      </div>
+      <div class="topbar-right" id="topbarActions">
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search customer..." oninput="onSearch()">
+        </div>
+        <button class="btn btn-primary" onclick="openCRMModal()">+ New Interaction</button>
+      </div>
+    </div>
+    <div class="content-area">
+      
+      <!-- Filters -->
+      <div class="panel mb-24 animate-fadeup">
+        <div class="panel-header"><div class="panel-title">📋 Filters</div></div>
+        <div class="panel-body">
+          <div class="d-flex gap-8 flex-wrap">
+            <select id="methodFilter" class="form-control" onchange="loadCRMInteractions()">
+              <option value="">All Methods</option>
+              <option value="PHONE">Phone Call</option>
+              <option value="SMS">SMS</option>
+              <option value="EMAIL">Email</option>
+              <option value="VISIT">Physical Visit</option>
+              <option value="WHATSAPP">WhatsApp</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <select id="outcomeFilter" class="form-control" onchange="loadCRMInteractions()">
+              <option value="">All Outcomes</option>
+              <option value="PTP">Promise to Pay</option>
+              <option value="PAID">Payment Made</option>
+              <option value="RESTRUCTURE">Restructure Request</option>
+              <option value="DEFAULT">Default Confirmed</option>
+              <option value="REPOSSESSION">Repossession Initiated</option>
+              <option value="ESCALATED">Escalated</option>
+              <option value="NO_RESPONSE">No Response</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadPTPToday()">📅 Today's PTP</button>
+            <button class="btn btn-ghost" onclick="loadFollowUps()">🔔 Follow-ups</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid-4 mb-24 animate-fadeup stagger-1">
+        <div class="panel">
+          <div class="panel-body text-center">
+            <div class="text-2xl fw-700" id="stat-total">0</div>
+            <div class="text-dim text-sm">Total Interactions</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-body text-center">
+            <div class="text-2xl fw-700" id="stat-ptp">0</div>
+            <div class="text-dim text-sm">PTP Today</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-body text-center">
+            <div class="text-2xl fw-700" id="stat-followups">0</div>
+            <div class="text-dim text-sm">Pending Follow-ups</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="panel animate-fadeup stagger-2">
+        <div class="panel-header"><div class="panel-title">Interactions</div></div>
+        <div class="panel-body-bare">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Branch</th>
+                <th>Method</th>
+                <th>Purpose</th>
+                <th>Outcome</th>
+                <th>PTP</th>
+                <th>Next Step</th>
+                <th>Recorded By</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="crmTbody">
+              <tr><td colspan="10" class="text-center">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <div class="pagination" id="crmPagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRM Modal -->
+  <div class="modal-overlay" id="modal-crm">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">📋 New CRM Interaction</div>
+        <div class="modal-close" onclick="Modal.close('modal-crm')">✕</div>
+      </div>
+      <div class="modal-body">
+        <form id="crmForm" onsubmit="event.preventDefault(); saveCRM();">
+          <!-- Customer -->
+          <div class="form-section">
+            <h3>Customer Information</h3>
+            <div class="form-grid">
+              <div>
+                <label class="form-label">Customer *</label>
+                <select class="form-control" id="crmCustomer" required onchange="onCustomerChange()">
+                  <option value="">Select Customer</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="crmCustomerName" readonly>
+              </div>
+              <div>
+                <label class="form-label">Customer Phone</label>
+                <input type="text" class="form-control" id="crmCustomerPhone" readonly>
+              </div>
+              <div>
+                <label class="form-label">Loan (Optional)</label>
+                <select class="form-control" id="crmLoan">
+                  <option value="">Select Loan</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conversation -->
+          <div class="form-section">
+            <h3>Conversation Details</h3>
+            <div class="form-grid">
+              <div>
+                <label class="form-label">Conversation Method *</label>
+                <select class="form-control" id="crmMethod" required>
+                  <option value="">Select Method</option>
+                  <option value="PHONE">Phone Call</option>
+                  <option value="SMS">SMS</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="VISIT">Physical Visit</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Conversation Purpose *</label>
+                <select class="form-control" id="crmPurpose" required>
+                  <option value="">Select Purpose</option>
+                  <option value="COLLECTION">Collections</option>
+                  <option value="FOLLOW_UP">Follow Up</option>
+                  <option value="VERIFICATION">Verification</option>
+                  <option value="PAYMENT_REMINDER">Payment Reminder</option>
+                  <option value="DEFAULT_NOTICE">Default Notice</option>
+                  <option value="NEGOTIATION">Negotiation</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Reason for Default</label>
+                <select class="form-control" id="crmReason">
+                  <option value="">Select Reason</option>
+                  <option value="FINANCIAL">Financial Difficulty</option>
+                  <option value="EMPLOYMENT">Job Loss/Income Issue</option>
+                  <option value="HEALTH">Health Emergency</option>
+                  <option value="BUSINESS">Business Failure</option>
+                  <option value="DISPUTE">Dispute over Loan</option>
+                  <option value="FORGOTTEN">Forgot to Pay</option>
+                  <option value="UNREACHABLE">Unreachable</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Outcome -->
+          <div class="form-section">
+            <h3>Outcome</h3>
+            <div class="form-grid">
+              <div>
+                <label class="form-label">Outcome *</label>
+                <select class="form-control" id="crmOutcome" required onchange="onOutcomeChange()">
+                  <option value="">Select Outcome</option>
+                  <option value="PTP">Promise to Pay</option>
+                  <option value="PAID">Payment Made</option>
+                  <option value="RESTRUCTURE">Restructure Request</option>
+                  <option value="DEFAULT">Default Confirmed</option>
+                  <option value="REPOSSESSION">Repossession Initiated</option>
+                  <option value="ESCALATED">Escalated</option>
+                  <option value="NO_RESPONSE">No Response</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Outcome Details (Narration)</label>
+              <textarea class="form-control" id="crmOutcomeDetails" rows="3" placeholder="Enter detailed narration of the outcome..."></textarea>
+            </div>
+          </div>
+
+          <!-- Voice Recording -->
+          <div class="form-section">
+            <h3>🎤 Record Conversation</h3>
+            <div class="recording-controls">
+              <button type="button" class="btn btn-primary" id="btnStartRecording" onclick="startRecording()">
+                <span class="btn-icon">🎙️</span> Start Recording
+              </button>
+              <button type="button" class="btn btn-danger" id="btnStopRecording" onclick="stopRecording()" disabled>
+                <span class="btn-icon">⏹️</span> Stop Recording
+              </button>
+              <button type="button" class="btn btn-ghost" id="btnClearRecording" onclick="clearRecording()">
+                <span class="btn-icon">🗑️</span> Clear
+              </button>
+            </div>
+            <div class="recording-status" id="recordingStatus"></div>
+            <div class="form-group">
+              <label class="form-label">Transcript</label>
+              <textarea class="form-control" id="crmTranscript" rows="4" placeholder="Transcript will appear here..."></textarea>
+            </div>
+          </div>
+
+          <!-- Next Steps -->
+          <div class="form-section">
+            <h3>Next Steps</h3>
+            <div class="form-grid">
+              <div>
+                <label class="form-label">Next Interaction Date</label>
+                <input type="date" class="form-control" id="crmNextDate">
+              </div>
+              <div>
+                <label class="form-label">Next Step</label>
+                <select class="form-control" id="crmNextStep">
+                  <option value="">Select Next Step</option>
+                  <option value="VISIT">Physical Visit</option>
+                  <option value="REPOSSESSION">Repossession</option>
+                  <option value="ESCALATE">Escalate to Management</option>
+                  <option value="CALL">Follow Up Call</option>
+                  <option value="NOTICE">Send Legal Notice</option>
+                  <option value="CLOSE">Close Case</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- PTP -->
+          <div class="form-section" id="ptpSection" style="display: none;">
+            <h3>💰 Promise to Pay</h3>
+            <div class="form-grid">
+              <div>
+                <label class="form-label">PTP Amount</label>
+                <input type="number" class="form-control" id="crmPTPAmount" step="0.01" placeholder="0.00">
+              </div>
+              <div>
+                <label class="form-label">PTP Date</label>
+                <input type="date" class="form-control" id="crmPTPDate">
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" id="btnSaveCRM">
+              <span class="btn-label">Save Interaction</span>
+              <span class="btn-spinner"></span>
+            </button>
+            <button type="button" class="btn btn-ghost" onclick="Modal.close('modal-crm')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="crm.js"></script>
+</body>
+</html>

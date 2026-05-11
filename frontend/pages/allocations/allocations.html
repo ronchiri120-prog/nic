@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Allocations v2 — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="allocations.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Allocations v2</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Operations · Allocations</div>
+      </div>
+      <div class="topbar-right" id="topbarActions"></div>
+    </div>
+        <div class="content-area">
+      <div class="kpi-grid animate-fadeup kpi-grid kpi-grid-3 animate-fadeup">
+        <div class="kpi-card kc-blue"><div class="kpi-label">Allocated Loans</div><div class="kpi-value" id="allocCount">—</div></div>
+        <div class="kpi-card kc-red"><div class="kpi-label">Unallocated</div><div class="kpi-value">—</div></div>
+        <div class="kpi-card kc-gold"><div class="kpi-label">Total Balance</div><div class="kpi-value text-2xl">—</div></div>
+      </div>
+      <div class="panel animate-fadeup stagger-1">
+        <div class="panel-header"><div class="panel-title">📋 Active Allocations</div></div>
+        <div class="panel-body-bare">
+          <table class="data-table">
+            <thead><tr><th>Agent</th><th>Loan</th><th>Customer</th><th>Branch</th><th>Assigned</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="allocTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Reassign Loan Modal -->
+  <div class="modal-overlay" id="modal-reassign">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div class="modal-title">🔀 Reassign Loan</div>
+        <div class="modal-close" onclick="Modal.close('modal-reassign')">✕</div>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="reassignLoanId">
+        <p class="text-sm text-dim mb-16">Select the loan officer to assign <b id="reassignLoanRef"></b> to.</p>
+        <div class="form-group">
+          <label class="form-label">Assign To *</label>
+          <select class="form-control" id="reassignAgentSel">
+            <option value="">Select loan officer…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason</label>
+          <textarea class="form-control" id="reassignReason" rows="2" placeholder="Reason for reassignment…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="Modal.close('modal-reassign')">Cancel</button>
+        <button class="btn btn-primary" id="confirmReassignBtn" onclick="confirmReassign()">
+          <span class="btn-label">Reassign</span><span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="toast-container"></div>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="allocations.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+/* customers.css — page-specific styles for customers.html */
+
+/* ── Customer profile row ─── */
+.cust-name-cell    { display: flex; align-items: center; gap: 8px; }
+.cust-name-text    { font-weight: 600; }
+.cust-phone-sub    { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); }
+
+/* ── KYC completeness bar ─── */
+.kyc-cell          { display: flex; align-items: center; gap: 6px; }
+.kyc-track         { background: var(--surface2); border-radius: 3px; height: 5px; width: 50px; overflow: hidden; }
+.kyc-fill-high     { height: 100%; background: var(--brand); }
+.kyc-fill-mid      { height: 100%; background: var(--gold); }
+.kyc-fill-low      { height: 100%; background: var(--red); }
+.kyc-pct           { font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+.kyc-pct-high      { color: var(--brand); }
+.kyc-pct-mid       { color: var(--gold); }
+.kyc-pct-low       { color: var(--red); }
+
+/* ── Customer detail modal ─── */
+.cust-profile-header {
+  padding: 20px 24px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cust-profile-meta   { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.cust-profile-badges { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.cust-profile-body   { padding: 20px 24px; }
+
+/* ── KYC ring SVG wrapper ─── */
+.kyc-ring-wrap  { text-align: center; flex-shrink: 0; }
+.kyc-ring-svg   { width: 64px; height: 64px; transform: rotate(-90deg); }
+.kyc-ring-track { fill: none; stroke: var(--surface3); stroke-width: 8; }
+.kyc-ring-fill-high   { fill: none; stroke: #0098A1; stroke-width: 8; stroke-linecap: round; }
+.kyc-ring-fill-mid    { fill: none; stroke: #f0b429; stroke-width: 8; stroke-linecap: round; }
+.kyc-ring-fill-low    { fill: none; stroke: #f06060; stroke-width: 8; stroke-linecap: round; }
+.kyc-ring-label { font-size: 10px; color: var(--text3); margin-top: -8px; font-family: 'JetBrains Mono', monospace; }
+
+/* ── Customer loan pills ─── */
+.loan-history-table { margin-top: 8px; }
+
+/* ── New customer form ─── */
+.new-customer-modal { width: 720px; max-height: 92vh; overflow-y: auto; }
+.kyc-progress-wrap  { margin-bottom: 20px; }
+.kyc-progress-head  { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 5px; }
+.kyc-progress-track { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+.kyc-progress-bar   { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; }
+
+.modal-footer-warn  {
+  font-size: 11px;
+  color: var(--text2);
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Document preview images ─────────────────────── */
+.doc-preview-lg  { max-width: 140px; border-radius: 6px; border: 1px solid var(--border); }
+.doc-preview-sm  { max-width: 100px; border-radius: 6px; border: 1px solid var(--border); }
+.link-no-underline { text-decoration: none; }

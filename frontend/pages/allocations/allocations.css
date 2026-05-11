@@ -1,0 +1,3 @@
+/* allocations.css — page-specific styles for allocations.html */
+
+.alloc-agent-cell   { display: flex; align-items: center; gap: 6px; }

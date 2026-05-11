@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Finance — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="assets.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Asset Finance</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Loans · Logbook</div>
+      </div>
+      <div class="topbar-right" id="topbarActions"></div>
+    </div>
+        <div class="content-area">
+      <div class="panel animate-fadeup">
+        <div class="panel-header">
+          <div class="panel-title">🚗 Asset Finance Registry</div>
+          <span class="badge badge-active" id="assetCount">—</span>
+        </div>
+        <div class="panel-body-bare">
+          <table class="data-table">
+            <thead><tr><th>Asset ID</th><th>Customer</th><th>Category</th><th>Details</th><th>Reg No.</th><th>Valuation</th><th>LTV</th><th>Loan</th><th>Valued</th><th>Status</th></tr></thead>
+            <tbody id="assetTbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-overlay" id="modal-new-asset">
+        <div class="modal modal-md">
+          <div class="modal-header"><div class="modal-title">🚗 Register Asset</div><div class="modal-close" onclick="Modal.close('modal-new-asset')">✕</div></div>
+          <div class="modal-body"><form id="newAssetForm">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Customer ID</label><input type="number" class="form-control" name="customer" placeholder="Customer ID"></div>
+              <div class="form-group"><label class="form-label">Category</label><select class="form-control" name="category"><option value="VEHICLE">Motor Vehicle</option><option value="MOTORCYCLE">Motorcycle</option><option value="LAND">Land/Property</option><option value="OTHER">Other</option></select></div>
+              <div class="form-group"><label class="form-label">Make</label><input class="form-control" name="make" placeholder="Toyota"></div>
+              <div class="form-group"><label class="form-label">Model</label><input class="form-control" name="model" placeholder="Prado"></div>
+              <div class="form-group"><label class="form-label">Year</label><input type="number" class="form-control" name="year" placeholder="2020"></div>
+              <div class="form-group"><label class="form-label">Reg Number</label><input class="form-control" name="reg_number" placeholder="KCX 123X"></div>
+              <div class="form-group"><label class="form-label">Valuation (KES)</label><input type="number" class="form-control" name="valuation" placeholder="0"></div>
+              <div class="form-group"><label class="form-label">Logbook No.</label><input class="form-control" name="logbook_no" placeholder="LBK/0000/0000"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Valued By</label><input class="form-control" name="valued_by" placeholder="Valuer name / company"></div>
+            <div class="form-group"><label class="form-label">Valuation Date</label><input type="date" class="form-control" name="valued_at"></div>
+          </form></div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="Modal.close('modal-new-asset')">Cancel</button>
+            <button class="btn btn-primary" id="saveAssetBtn" onclick="saveAsset()"><span class="btn-label">Register</span><span class="btn-spinner"></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div id="toast-container"></div>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="assets.js"></script>
+</body>
+</html>

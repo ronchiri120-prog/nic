@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Branches — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="branches.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Branches</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Organization · Branches</div>
+      </div>
+      <div class="topbar-right" id="topbarActions"></div>
+    </div>
+    <div class="content-area" id="pageContent">
+      <div class="page-loading load-center">
+        <div class="text-center">
+          <div class="spin-icon">⚡</div>
+          <div class="mono text-sm">Loading Branches…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Edit Branch Modal -->
+  <div class="modal-overlay" id="modal-edit-branch">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div class="modal-title">✏️ Edit Branch</div>
+        <div class="modal-close" onclick="Modal.close('modal-edit-branch')">✕</div>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editBranchId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Branch Name *</label>
+            <input class="form-control" id="editBranchName" placeholder="e.g. Nairobi CBD">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input class="form-control" id="editBranchPhone" placeholder="07XXXXXXXX">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sub-market / Territory</label>
+            <input class="form-control" id="editBranchSubmarket" placeholder="e.g. Eastlands, Westlands">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Disbursement Target (KES/mo)</label>
+            <input class="form-control" type="number" id="editBranchTarget" placeholder="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <textarea class="form-control" id="editBranchAddress" rows="2" placeholder="Physical address…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="Modal.close('modal-edit-branch')">Cancel</button>
+        <button class="btn btn-primary" id="saveBranchEditBtn" onclick="saveEditBranch()">
+          <span class="btn-label">Save Changes</span><span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="branches.js"></script>
+</body>
+</html>

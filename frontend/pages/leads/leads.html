@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leads — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="leads.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Leads</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Sales · Lead Origination</div>
+      </div>
+      <div class="topbar-right" id="topbarActions"></div>
+    </div>
+    <div class="content-area" id="pageContent"></div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <!-- ── NEW LEAD MODAL (minimal: name, phone, ID, gender, business, submarket) ── -->
+  <div class="modal-overlay" id="modal-new-lead">
+    <div class="modal modal-md">
+      <div class="modal-header sticky-top-modal">
+        <div class="modal-title">🎯 Capture New Lead</div>
+        <div class="modal-close" onclick="Modal.close('modal-new-lead')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input class="form-control" id="ldFirstName" placeholder="First name" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input class="form-control" id="ldLastName" placeholder="Last name" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input class="form-control" id="ldPhone" placeholder="07XXXXXXXX" type="tel">
+          </div>
+          <div class="form-group">
+            <label class="form-label">National ID</label>
+            <input class="form-control" id="ldNationalId" placeholder="ID number">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-control" id="ldGender">
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="O">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Source</label>
+            <select class="form-control" id="ldSource">
+              <option value="WALK_IN">Walk-in</option>
+              <option value="REFERRAL">Referral</option>
+              <option value="MARKETING">Marketing</option>
+              <option value="SOCIAL">Social Media</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business Category</label>
+            <select class="form-control" id="ldBizCategory">
+              <option value="">Select…</option>
+              <option value="Retail">Retail / Shop</option>
+              <option value="Food">Food &amp; Beverages</option>
+              <option value="Transport">Transport / Boda</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Salon">Salon / Barber</option>
+              <option value="Tailoring">Tailoring / Fashion</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Construction">Construction / Jua Kali</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Education">Education</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sub-market *
+              <span class="form-hint form-hint-inline">e.g. Heshima, Town, Milimani</span>
+            </label>
+            <input class="form-control" id="ldSubmarket" placeholder="Type the sub-market area…">
+          </div>
+        </div>
+
+        <!-- Branch — auto-filled for RO, dropdown for admin -->
+        <div class="form-group" id="ldBranchGroup">
+          <label class="form-label">Branch</label>
+          <select class="form-control" id="ldBranch"><option value="">Loading…</option></select>
+          <div class="form-hint mt-4" id="ldBranchHint"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" id="ldNotes" rows="2" placeholder="Any additional notes…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer sticky-bottom-modal">
+        <button class="btn btn-ghost" onclick="Modal.close('modal-new-lead')">Cancel</button>
+        <button class="btn btn-primary" id="saveLeadBtn" onclick="saveLead()">
+          <span class="btn-label">Save Lead</span><span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LEAD DETAIL / CONVERT PANEL (eye icon opens this) ── -->
+  <div class="modal-overlay" id="modal-lead-detail">
+    <div class="modal modal-xl">
+      <div class="modal-header sticky-top-modal">
+        <div>
+          <div class="modal-title" id="leadDetailTitle">Lead Detail</div>
+          <div class="text-xs text-dim mono mt-2" id="leadDetailMeta"></div>
+        </div>
+        <div class="modal-close" onclick="Modal.close('modal-lead-detail')">✕</div>
+      </div>
+
+      <div class="modal-body p-0">
+        <!-- Tabs -->
+        <div class="tabs px-20 border-bottom-1">
+          <button class="tab-btn active" onclick="switchTab(this,'ld-tab-info')">👤 Personal Info</button>
+          <button class="tab-btn" onclick="switchTab(this,'ld-tab-business')">🏪 Business</button>
+          <button class="tab-btn" onclick="switchTab(this,'ld-tab-guarantor')">🤝 Guarantor</button>
+          <button class="tab-btn" onclick="switchTab(this,'ld-tab-loan')">💰 Loan &amp; Convert</button>
+        </div>
+
+        <!-- Tab: Personal Info -->
+        <div id="ld-tab-info" class="tab-content active p-20">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">First Name *</label>
+              <input class="form-control" id="cvFirstName" placeholder="First name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name *</label>
+              <input class="form-control" id="cvLastName" placeholder="Last name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone *</label>
+              <input class="form-control" id="cvPhone" placeholder="07XXXXXXXX" type="tel">
+            </div>
+            <div class="form-group">
+              <label class="form-label">National ID *</label>
+              <input class="form-control" id="cvNationalId" placeholder="ID number">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <select class="form-control" id="cvGender">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Marital Status</label>
+              <select class="form-control" id="cvMarital">
+                <option value="">Select…</option>
+                <option value="SINGLE">Single</option>
+                <option value="MARRIED">Married</option>
+                <option value="DIVORCED">Divorced</option>
+                <option value="WIDOWED">Widowed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <input class="form-control" id="cvDob" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alt Phone</label>
+              <input class="form-control" id="cvPhone2" placeholder="Optional second number">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Home Address</label>
+            <textarea class="form-control" id="cvHomeAddress" rows="2" placeholder="Estate, street, building…"></textarea>
+          </div>
+        </div>
+
+        <!-- Tab: Business -->
+        <div id="ld-tab-business" class="tab-content p-20">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Business Name</label>
+              <input class="form-control" id="cvBizName" placeholder="e.g. Jane's Grocery">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Business Category</label>
+              <select class="form-control" id="cvBizCategory">
+                <option value="">Select…</option>
+                <option value="Retail">Retail / Shop</option>
+                <option value="Food">Food &amp; Beverages</option>
+                <option value="Transport">Transport / Boda</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Salon">Salon / Barber</option>
+                <option value="Tailoring">Tailoring / Fashion</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Construction">Construction / Jua Kali</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Education">Education</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Branch <span class="text-brand">(auto)</span></label>
+              <input class="form-control" id="cvBranchDisplay" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sub-market *</label>
+              <input class="form-control" id="cvSubmarket" placeholder="e.g. Heshima, Town, Milimani">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business Location / Address</label>
+            <textarea class="form-control" id="cvBizLocation" rows="2" placeholder="Building, street, stage…"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Income (KES)</label>
+            <input class="form-control" type="number" id="cvIncome" placeholder="0" oninput="calcLeadAffordability()">
+          </div>
+          <div class="alert alert-info mt-8" id="cvAffordabilityHint" class="d-none">
+            <span>💡</span>
+            <div id="cvAffordabilityText"></div>
+          </div>
+        </div>
+
+        <!-- Tab: Guarantor -->
+        <div id="ld-tab-guarantor" class="tab-content p-20">
+          <div class="nok-section-label">NEXT OF KIN</div>
+          <div class="form-grid mb-16">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input class="form-control" id="cvNokName" placeholder="Next of kin name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-control" id="cvNokPhone" placeholder="07XXXXXXXX" type="tel">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Relationship</label>
+              <input class="form-control" id="cvNokRelation" placeholder="e.g. Spouse, Parent">
+            </div>
+          </div>
+          <div class="nok-section-label-mid">GUARANTOR</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input class="form-control" id="cvGuarName" placeholder="Guarantor full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-control" id="cvGuarPhone" placeholder="07XXXXXXXX" type="tel">
+            </div>
+            <div class="form-group">
+              <label class="form-label">National ID</label>
+              <input class="form-control" id="cvGuarId" placeholder="Guarantor ID number">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Relationship</label>
+              <input class="form-control" id="cvGuarRelation" placeholder="e.g. Friend, Colleague">
+            </div>
+          </div>
+          <div class="form-group mt-12">
+            <label class="form-label">Guarantor Address</label>
+            <textarea class="form-control" id="cvGuarAddress" rows="2" placeholder="Guarantor home/business address…"></textarea>
+          </div>
+        </div>
+
+        <!-- Tab: Loan & Convert -->
+        <div id="ld-tab-loan" class="tab-content p-20">
+          <div class="alert alert-info mb-20">
+            <span>ℹ️</span>
+            <div>
+              <b>How conversion works:</b> Save the lead's info across all tabs first,
+              then choose a product here. You can either keep it as a
+              <b>Qualified Lead</b> or <b>Activate as Customer</b> with a loan.
+            </div>
+          </div>
+
+          <div class="panel mb-16">
+            <div class="panel-header"><div class="panel-title">💰 Loan Product</div></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Select Product</label>
+                  <select class="form-control" id="cvProduct" onchange="calcLeadLoan()">
+                    <option value="">Choose product…</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Loan Amount (KES)</label>
+                  <input class="form-control" type="number" id="cvAmount"
+                    placeholder="e.g. 5000" oninput="calcLeadLoan()">
+                  <div class="form-hint" id="cvAmountHint"></div>
+                </div>
+              </div>
+              <!-- Weekly loan schedule option -->
+              <div class="form-group" id="cvWeeklyWrap">
+                <label class="form-label">Repayment Duration</label>
+                <div class="d-flex gap-8">
+                  <label class="d-flex items-center gap-6 cursor-pointer">
+                    <input type="radio" name="cvWeeks" value="4" onchange="calcLeadLoan()"> 4 weeks
+                  </label>
+                  <label class="d-flex items-center gap-6 cursor-pointer">
+                    <input type="radio" name="cvWeeks" value="6" onchange="calcLeadLoan()" checked> 6 weeks
+                  </label>
+                  <label class="d-flex items-center gap-6 cursor-pointer">
+                    <input type="radio" name="cvWeeks" value="8" onchange="calcLeadLoan()"> 8 weeks
+                  </label>
+                </div>
+              </div>
+              <!-- Loan preview -->
+              <div id="cvLoanPreview" class="mt-8"></div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-12 flex-wrap">
+            <button class="btn btn-ghost flex-1" id="saveLeadOnlyBtn" onclick="saveLeadDetail('QUALIFIED')">
+              <span class="btn-label">💾 Save as Qualified Lead</span><span class="btn-spinner"></span>
+            </button>
+            <button class="btn btn-primary flex-1" id="activateCustomerBtn" onclick="saveLeadDetail('CONVERT')">
+              <span class="btn-label">✅ Activate as Customer</span><span class="btn-spinner"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="leads.js"></script>
+</body>
+</html>

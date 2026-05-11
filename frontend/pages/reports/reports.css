@@ -1,0 +1,8 @@
+/* reports.css — page-specific styles for reports.html */
+
+.report-totals-grid   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+.report-rate-good     { color: var(--brand); font-weight: 700; }
+.report-rate-mid      { color: var(--gold); font-weight: 700; }
+.report-rate-bad      { color: var(--red); font-weight: 700; }
+.report-balance-pos   { color: var(--gold); }
+.report-balance-zero  { color: var(--text3); }

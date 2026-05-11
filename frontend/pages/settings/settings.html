@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Settings</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> System · Settings</div>
+      </div>
+      <div class="topbar-right" id="topbarActions"></div>
+    </div>
+    <div class="content-area" id="pageContent">
+      <div class="page-loading load-center">
+        <div class="text-center">
+          <div class="spin-icon">⚡</div>
+          <div class="mono text-sm">Loading Settings…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="toast-container"></div>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="settings.js"></script>
+
+  <!-- Add / Edit Product Modal -->
+  <div class="modal-overlay" id="modal-product">
+    <div class="modal modal-lg">
+      <div class="modal-header sticky-top-modal">
+        <div class="modal-title" id="productModalTitle">💰 Add Loan Product</div>
+        <div class="modal-close" onclick="Modal.close('modal-product')">✕</div>
+      </div>
+      <div class="modal-body">
+        <form id="productForm">
+          <input type="hidden" id="editProductId" name="id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Product Name *</label>
+              <input class="form-control" id="prodName" name="name" placeholder="e.g. Weekly Loan — Standard">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Loan Type *</label>
+              <select class="form-control" id="prodType" name="loan_type">
+                <option value="FA">FA — Fixed Amount</option>
+                <option value="CC">CC — Credit Check</option>
+                <option value="LOGBOOK">Logbook</option>
+                <option value="IDC">IDC</option>
+                <option value="EDC">EDC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min Amount (KES)</label>
+              <input class="form-control" type="number" id="prodMin" name="min_amount" placeholder="500">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max Amount (KES)</label>
+              <input class="form-control" type="number" id="prodMax" name="max_amount" placeholder="100000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interest Rate (%) *</label>
+              <input class="form-control" type="number" step="0.1" id="prodRate" name="interest_rate" placeholder="e.g. 5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tenure (days)</label>
+              <input class="form-control" type="number" id="prodTenure" name="tenure_days" placeholder="e.g. 42">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Penalty Rate (%/day)</label>
+              <input class="form-control" type="number" step="0.1" id="prodPenalty" name="penalty_rate" placeholder="0.5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">First Loan Fee (KES)</label>
+              <input class="form-control" type="number" id="prodFirstFee" name="first_loan_fee" placeholder="500">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Repeat Loan Fee (KES)</label>
+              <input class="form-control" type="number" id="prodRepeatFee" name="repeat_loan_fee" placeholder="300">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Active</label>
+              <select class="form-control" name="is_active">
+                <option value="true">Yes — Active</option>
+                <option value="false">No — Dormant</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer sticky-bottom-modal">
+        <button class="btn btn-ghost" onclick="Modal.close('modal-product')">Cancel</button>
+        <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct()">
+          <span class="btn-label">Save Product</span><span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

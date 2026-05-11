@@ -1,0 +1,47 @@
+# QuickLender Prometheus Configuration
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: quicklender-production
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+rule_files:
+  - "alert_rules.yml"
+
+scrape_configs:
+  # Django API metrics
+  - job_name: quicklender-api
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Celery worker metrics
+  - job_name: celery
+    static_configs:
+      - targets: ['localhost:9808']
+
+  # PostgreSQL metrics
+  - job_name: postgres
+    static_configs:
+      - targets: ['localhost:9187']
+
+  # Redis metrics
+  - job_name: redis
+    static_configs:
+      - targets: ['localhost:9121']
+
+  # Nginx metrics
+  - job_name: nginx
+    static_configs:
+      - targets: ['localhost:9113']
+
+  # Node (server) metrics
+  - job_name: node
+    static_configs:
+      - targets: ['localhost:9100']

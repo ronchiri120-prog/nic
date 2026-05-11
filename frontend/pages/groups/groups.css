@@ -1,0 +1,70 @@
+/* groups.css — page-specific styles for groups.html */
+
+/* ── Group card ─────────────────────────────── */
+.group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--t), transform var(--t);
+}
+.group-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+.group-card-header {
+  padding: 16px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.group-card-id    { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--brand); margin-bottom: 3px; }
+.group-card-name  { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.group-card-branch{ font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.group-card-body  { padding: 14px 20px; }
+.group-stat-row   { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.group-stat-row:last-child { border-bottom: none; }
+.group-stat-label { color: var(--text2); }
+.group-stat-value { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+
+.group-card-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 6px; justify-content: flex-end; }
+
+/* ── Member list inside group detail ────────── */
+.member-list      { margin-top: 8px; }
+.member-row       { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.member-row:last-child { border-bottom: none; }
+.member-avatar    { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.member-name      { font-weight: 600; font-size: 12.5px; }
+.member-sub       { font-size: 11px; color: var(--text3); }
+.member-role-badge{ font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
+.member-role-chair{ background: var(--gold-dim); color: var(--gold); border-color: rgba(240,180,41,0.3); }
+.member-role-sec  { background: var(--blue-dim); color: var(--blue); border-color: rgba(91,141,239,0.3); }
+.member-role-tres { background: var(--brand-dim); color: var(--brand); border-color: var(--brand-glow); }
+
+/* ── Group loan row ──────────────────────────── */
+.group-loan-row   { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.group-loan-row:last-child { border-bottom: none; }
+.group-loan-id    { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--brand); font-weight: 600; }
+.group-loan-amount{ font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; }
+
+/* ── Loan share preview ──────────────────────── */
+.share-preview-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+.share-preview-head{ font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+
+/* ── Customer search results ─────────────────── */
+.customer-result  { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; transition: background var(--t); }
+.customer-result:hover { background: var(--surface2); }
+.customer-result-name  { font-weight: 600; font-size: 12.5px; }
+.customer-result-meta  { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+.customer-selected     { background: var(--brand-dim); border: 1px solid var(--brand-glow); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+
+/* ── Group grid layout ───────────────────────── */
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+/* ── Group detail modal ──────────────────────── */
+.group-detail-modal { width: 760px; max-height: 90vh; overflow-y: auto; }
+.group-detail-header{ padding: 20px 24px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+.group-detail-tabs  { padding: 0 24px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+.group-detail-body  { padding: 20px 24px; }

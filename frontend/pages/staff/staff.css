@@ -1,0 +1,8 @@
+/* staff.css — page-specific styles for staff.html */
+
+.staff-role-badge   { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 2px 7px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); white-space: nowrap; }
+.staff-name-cell    { display: flex; align-items: center; gap: 8px; }
+.staff-name-text    { font-weight: 600; }
+.staff-email-sub    { font-size: 11px; color: var(--text3); }
+.perm-grid          { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.perm-item          { display: flex; align-items: center; gap: 8px; font-size: 12px; }

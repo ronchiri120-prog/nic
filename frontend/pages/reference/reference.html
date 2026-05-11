@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference Check — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="reference.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Reference Check</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Customer Lookup</div>
+      </div>
+      <div class="topbar-right" id="topbarActions"></div>
+    </div>
+    <div class="content-area">
+
+      <!-- Search bar -->
+      <div class="ref-search-area">
+        <div class="ref-search-bar">
+          <span class="ref-search-icon-lg">🔎</span>
+          <input
+            class="ref-input"
+            id="refInput"
+            type="text"
+            placeholder="Enter National ID or Phone number…"
+            autocomplete="off"
+            maxlength="20"
+            onkeydown="if(event.key==='Enter') runCheck()"
+          >
+          <button class="ref-btn" id="refBtn" onclick="runCheck()">Check</button>
+        </div>
+        <p class="ref-search-hint">
+          Checks across ALL branches · Prevents duplicate profiles · Reveals active loan exposure
+        </p>
+      </div>
+
+      <!-- Result area -->
+      <div id="refResult" class="ref-result-area"></div>
+
+    </div>
+  </div>
+  <div id="toast-container"></div>
+
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="reference.js"></script>
+</body>
+</html>

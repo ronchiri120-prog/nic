@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="payments.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Payments</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Finance · Payments</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search…" oninput="onSearch(this)">
+        </div>
+        
+      <select class="form-control filter-ctrl-md" id="methodFilter" title="Payment Method Filter" onchange="loadPayments()">
+        <option value="">All Methods</option>
+        <option value="MPESA">M-Pesa</option>
+        <option value="BANK">Bank</option>
+        <option value="CASH">Cash</option>
+      </select>
+      <button class="btn btn-ghost" onclick="Toast.success('Reconciliation report exported')">⬇ Reconcile</button>
+      <button class="btn btn-primary" onclick="Modal.open('modal-record-payment')">+ Record Payment</button>
+    
+      </div>
+    </div>
+    <div class="content-area" id="mainContent">
+      
+      <div class="kpi-grid animate-fadeup kpi-grid kpi-grid-3 animate-fadeup">
+        <div class="kpi-card kc-green"><div class="kpi-label">Today's Collections</div><div class="kpi-value" id="kpi-today-collected" class="text-22">KES —</div><div class="kpi-delta up">▲ 23 transactions</div></div>
+        <div class="kpi-card kc-gold"><div class="kpi-label">MTD Collections</div><div class="kpi-value text-22">KES 3.7M</div><div class="kpi-delta up">▲ 88.1% rate</div></div>
+        <div class="kpi-card kc-red"><div class="kpi-label">Overdue Today</div><div class="kpi-value text-22">KES 312K</div><div class="kpi-delta down">▼ 41 accounts</div></div>
+      </div>
+      <div class="panel animate-fadeup stagger-1">
+        <div class="panel-header">
+          <div class="panel-title">💳 Payment Ledger</div>
+          <span class="badge badge-active" id="payCount"></span>
+        </div>
+        <div class="panel-body-bare">
+          <table class="data-table">
+            <thead><tr><th>Ref</th><th>Customer</th><th>Loan</th><th>Amount</th><th>Method</th><th>M-Pesa Ref</th><th>Paid At</th><th>Type</th></tr></thead>
+            <tbody id="payTbody"></tbody>
+          </table>
+          <div id="payPagination"></div>
+        </div>
+      </div>
+    
+    </div>
+  </div>
+  <div id="toast-container"></div>
+  
+      <div class="modal-overlay" id="modal-record-payment">
+        <div class="modal modal-md">
+          <div class="modal-header">
+            <div class="modal-title">💳 Record Payment</div>
+            <div class="modal-close" onclick="Modal.close('modal-record-payment')">✕</div>
+          </div>
+          <div class="modal-body">
+            <div class="form-group"><label class="form-label">Loan ID</label><input class="form-control" name="loan_id" id="payLoanId" placeholder="QL-L0001"></div>
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Amount (KES)</label><input type="number" class="form-control" name="amount" title="Payment Amount" placeholder="0"></div>
+              <div class="form-group"><label class="form-label">Method</label><select class="form-control" name="method" title="Payment Method"><option value="MPESA">M-Pesa</option><option value="BANK">Bank</option><option value="CASH">Cash</option></select></div>
+            </div>
+            <div class="form-group"><label class="form-label">M-Pesa Reference</label><input class="form-control" name="mpesa_ref" title="M-Pesa Reference Number" placeholder="QGJ72HXXXXX"></div>
+            <div class="form-group"><label class="form-label">Payment Type</label><select class="form-control" name="payment_type" title="Payment Type"><option value="PARTIAL">Partial</option><option value="FULL">Full Payment</option><option value="PENALTY">Penalty</option><option value="FIRST_TIME_FEE">First-time Applicant Fee</option><option value="REPEAT_FEE">Repeat Customer Processing Fee</option></select></div>
+          </div>
+          </form>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="Modal.close('modal-record-payment')">Cancel</button>
+            <button class="btn btn-primary" onclick="recordPayment()" id="recordPayBtn"><span class="btn-label">Record Payment</span><span class="btn-spinner"></span></button>
+          </div>
+        </div>
+      </div>
+    
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="payments.js"></script>
+
+  <!-- Privileged Payment Upload Modal (Admin / HOP / GM) -->
+  <div class="modal-overlay" id="modal-upload-payment">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">📤 Direct Payment Upload</div>
+          <div class="text-sm text-dim mt-4">
+            Admin · HOP · GM · Branch Manager only
+          </div>
+        </div>
+        <div class="modal-close" onclick="Modal.close('modal-upload-payment')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="tabs" data-tab-scope class="mb-16">
+          <button class="tab-btn active" onclick="switchTab(this,'up-single')">Single Payment</button>
+          <button class="tab-btn" onclick="switchTab(this,'up-bulk')">Bulk CSV Upload</button>
+        </div>
+
+        <!-- Single -->
+        <div id="up-single" class="tab-content active">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Loan ID *</label>
+              <input class="form-control" id="up-loan-id" placeholder="QL-L0001"
+                class="mono">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (KES) *</label>
+              <input type="number" class="form-control" id="up-amount" placeholder="0" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Method *</label>
+              <select class="form-control" id="up-method" title="Payment Method">
+                <option value="MPESA">M-Pesa</option>
+                <option value="BANK">Bank Transfer</option>
+                <option value="CASH">Cash</option>
+                <option value="CHEQUE">Cheque</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Date</label>
+              <input type="date" class="form-control" id="up-date"
+                title="Leave blank for today. Admin/HOP/GM can backdate.">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">M-Pesa Reference</label>
+            <input class="form-control" id="up-mpesa-ref" placeholder="e.g. QGJ00XXXXX"
+              class="mono">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes / Reason for Upload</label>
+            <textarea class="form-control" id="up-notes" rows="2"
+              placeholder="e.g. Customer paid at branch — M-Pesa ref missing"></textarea>
+          </div>
+          <div class="audit-trail-note">
+            ⚠️ This action is fully audited. Your name and role will be recorded against this payment.
+          </div>
+        </div>
+
+        <!-- Bulk CSV -->
+        <div id="up-bulk" class="tab-content">
+          <div class="bulk-hint">
+            <b>CSV Format:</b> loan_id, amount, method, date (YYYY-MM-DD), mpesa_ref, notes<br>
+            <span class="text-dim">Example: QL-L0001, 15000, MPESA, 2026-03-20, QGJ00TEST01, March payment</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Upload CSV File</label>
+            <input type="file" class="form-control" id="up-csv-file" accept=".csv" title="CSV Payment File">
+          </div>
+          <div id="up-bulk-preview" class="d-none mt-8"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="Modal.close('modal-upload-payment')">Cancel</button>
+        <button class="btn btn-primary" id="uploadPayBtn" onclick="submitUploadPayment()">
+          <span class="btn-label">📤 Upload Payment</span><span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

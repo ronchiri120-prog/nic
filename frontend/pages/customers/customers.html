@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customers — QuickLender</title>
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/topbar.css">
+  <link rel="stylesheet" href="customers.css">
+</head>
+<body>
+  <div id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Customers</div>
+        <div class="breadcrumb"><span class="breadcrumb-sep">/</span> Customer Registry</div>
+      </div>
+      <div class="topbar-right" id="topbarActions">
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search name, ID, phone…" oninput="onSearch(this)">
+        </div>
+        <select class="form-control filter-150" id="branchFilter" onchange="loadCustomers()">
+          <option value="">All Branches</option>
+        </select>
+        <select class="form-control filter-110" id="statusFilter" onchange="loadCustomers()">
+          <option value="">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="DORMANT">Dormant</option>
+          <option value="BLACKLISTED">Blacklisted</option>
+        </select>
+        <button class="btn btn-ghost" onclick="API.exportCustomers()">⬇ CSV</button>
+        <button class="btn btn-ghost" onclick="window.location.href='../reference/reference.html'">🔎 Ref Check</button>
+        <button class="btn btn-primary" onclick="openNewCustomer()">+ Register Customer</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div class="kpi-grid animate-fadeup kpi-grid kpi-grid-4 animate-fadeup" id="custKPIs"></div>
+      <div class="panel animate-fadeup stagger-1">
+        <div class="panel-header">
+          <div class="panel-title">👥 Customer Registry</div>
+          <span class="badge badge-active" id="custCount">—</span>
+        </div>
+        <div class="panel-body-bare">
+          <table class="data-table">
+            <thead><tr>
+              <th>UID</th><th>Full Name</th><th>National ID</th>
+              <th>Phone</th><th>Branch</th><th>Loan Limit</th>
+              <th>Tier</th><th>KYC</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="custTbody"></tbody>
+          </table>
+          <div id="custPagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <!-- ═══ NEW CUSTOMER MODAL — FULL KYC ═══════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-new-customer">
+    <div class="modal new-customer-modal">
+      <div class="modal-header modal-header-sticky">
+        <div>
+          <div class="modal-title">👤 Register New Customer</div>
+          <div class="text-sm text-dim mt-4">Complete all sections for full KYC compliance</div>
+        </div>
+        <div class="modal-close" onclick="Modal.close('modal-new-customer')">✕</div>
+      </div>
+
+      <div class="modal-body">
+        <!-- KYC completeness bar -->
+        <div class="mb-20">
+          <div class="kyc-progress-head">
+            <span>KYC Completeness</span><span id="kyc-pct" class="mono">0%</span>
+          </div>
+          <div class="kyc-bar-in-form">
+            <div id="kyc-bar" class="kyc-fill-in-form" id="kyc-bar"></div>
+          </div>
+        </div>
+
+        <form id="newCustomerForm">
+          <!-- ── SECTION 1: PERSONAL IDENTITY ── -->
+          <div class="form-section-label">1 · Personal Identity</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">First Name *</label>
+              <input class="form-control" name="first_name" placeholder="First name" required oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name *</label>
+              <input class="form-control" name="last_name" placeholder="Last name" required oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">National ID / Passport No. *</label>
+              <input class="form-control" name="national_id" placeholder="e.g. 12345678" required oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender *</label>
+              <select class="form-control" name="gender" required onchange="updateKYC()">
+                <option value="">Select…</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <input type="date" class="form-control" name="dob" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Marital Status</label>
+              <select class="form-control" name="marital_status" onchange="updateKYC()">
+                <option value="">Select…</option>
+                <option value="SINGLE">Single</option>
+                <option value="MARRIED">Married</option>
+                <option value="DIVORCED">Divorced</option>
+                <option value="WIDOWED">Widowed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Dependants</label>
+              <input type="number" class="form-control" name="dependants" value="0" min="0" max="20">
+            </div>
+          </div>
+
+          <!-- ── SECTION 2: CONTACT ── -->
+          <div class="form-section-label mt-20">2 · Contact Information</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Primary Phone * <span class="text-9 text-dim">(07XX or 2547XX)</span></label>
+              <input class="form-control" name="phone" placeholder="0712 345 678" required oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Secondary Phone</label>
+              <input class="form-control" name="phone2" placeholder="0722 000 000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-control" name="email" placeholder="name@example.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Residential Address</label>
+            <textarea class="form-control" name="address" rows="2"
+              placeholder="House / Plot No., Street, Estate, Town" oninput="updateKYC()"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">County</label>
+              <input class="form-control" name="county" placeholder="e.g. Nairobi"
+                oninput="updateKYC()" list="county-list">
+              <datalist id="county-list">
+                <option>Nairobi</option><option>Mombasa</option><option>Kisumu</option>
+                <option>Nakuru</option><option>Kiambu</option><option>Machakos</option>
+                <option>Meru</option><option>Nyeri</option><option>Murang'a</option>
+                <option>Kajiado</option><option>Uasin Gishu</option><option>Kakamega</option>
+                <option>Kisii</option><option>Kilifi</option><option>Trans Nzoia</option>
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sub-County</label>
+              <input class="form-control" name="sub_county" placeholder="e.g. Westlands">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Village / Estate</label>
+              <input class="form-control" name="village" placeholder="e.g. Highridge">
+            </div>
+          </div>
+
+          <!-- ── SECTION 3: EMPLOYMENT ── -->
+          <div class="form-section-label mt-20">3 · Employment &amp; Income</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Employment Type *</label>
+              <select class="form-control" name="employment_type" required onchange="updateKYC()">
+                <option value="">Select…</option>
+                <option value="PERMANENT">Permanent / Civil Servant</option>
+                <option value="CONTRACT">Contract Employee</option>
+                <option value="SELF_EMPLOYED">Self Employed</option>
+                <option value="BUSINESS">Business Owner</option>
+                <option value="CASUAL">Casual / Daily Worker</option>
+                <option value="RETIRED">Retired / Pensioner</option>
+                <option value="UNEMPLOYED">Unemployed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Employer / Business Name</label>
+              <input class="form-control" name="employer" placeholder="Company or business name" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Employer Phone</label>
+              <input class="form-control" name="employer_phone" placeholder="HR / supervisor contact">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Latest Payslip Date</label>
+              <input type="date" class="form-control" name="payslip_date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gross Monthly Income (KES)</label>
+              <input type="number" class="form-control" name="monthly_income"
+                placeholder="0" min="0" oninput="calcAffordability()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Net Salary / Take-home (KES)</label>
+              <input type="number" class="form-control" name="net_salary"
+                placeholder="0" min="0" id="netSalaryField" oninput="calcAffordability()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Loan Limit (KES)</label>
+              <input type="number" class="form-control" name="loan_limit" id="loanLimitField"
+                placeholder="Auto: 3× net salary" class="text-brand fw-600">
+              <div class="text-xs text-dim mt-4">Auto-set to 3× net salary; override if needed</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Employer Address</label>
+            <textarea class="form-control" name="employer_address" rows="1"
+              placeholder="Office / workplace address (optional)"></textarea>
+          </div>
+
+          <!-- ── SECTION 4: NEXT OF KIN ── -->
+          <div class="form-section-label mt-20">4 · Next of Kin</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input class="form-control" name="next_of_kin" placeholder="Next of kin full name" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone *</label>
+              <input class="form-control" name="next_of_kin_phone" placeholder="07XX XXX XXX" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Relationship</label>
+              <input class="form-control" name="next_of_kin_relation"
+                placeholder="Spouse, Parent, Sibling…" list="relation-list">
+              <datalist id="relation-list">
+                <option>Spouse</option><option>Parent</option><option>Sibling</option>
+                <option>Child</option><option>Friend</option><option>Relative</option><option>Other</option>
+              </datalist>
+            </div>
+          </div>
+
+          <!-- ── SECTION 5: GUARANTOR ── -->
+          <div class="form-section-label mt-20">5 · Guarantor</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Guarantor Full Name</label>
+              <input class="form-control" name="guarantor_name" placeholder="Full name" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Guarantor Phone</label>
+              <input class="form-control" name="guarantor_phone" placeholder="07XX XXX XXX" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Guarantor National ID</label>
+              <input class="form-control" name="guarantor_id" placeholder="ID number" oninput="updateKYC()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Relationship to Customer</label>
+              <input class="form-control" name="guarantor_relation"
+                placeholder="e.g. Colleague, Relative">
+            </div>
+          </div>
+
+          <!-- ── SECTION 6: BRANCH ASSIGNMENT ── -->
+          <div class="form-section-label mt-20">6 · Branch Assignment</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Branch *</label>
+              <select class="form-control" name="branch" id="custBranchSel"
+                required onchange="loadOfficersForBranch(this.value)">
+                <option value="">Select branch…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Loan Officer *</label>
+              <select class="form-control" name="loan_officer" id="custLOSel" required>
+                <option value="">Select branch first…</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer modal-footer-sticky">
+        <div class="text-sm text-dim mr-auto">
+          ⚠️ Always run <b>Reference Check</b> before registering a new customer
+        </div>
+        <button class="btn btn-ghost" onclick="runRefCheck()">🔎 Ref Check</button>
+        <button class="btn btn-ghost" onclick="Modal.close('modal-new-customer')">Cancel</button>
+        <button class="btn btn-primary" id="saveCustomerBtn" onclick="saveCustomer()">
+          <span class="btn-label">✓ Register Customer</span><span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CUSTOMER DETAIL MODAL ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-customer-detail">
+    <div class="modal modal-xl">
+      <div class="modal-header sticky-top-modal">
+        <div class="modal-title">👤 Customer Profile</div>
+        <div class="modal-close" onclick="Modal.close('modal-customer-detail')">✕</div>
+      </div>
+      <div id="customerDetailPanel" class="p-0"></div>
+      <div class="modal-footer sticky-bottom-modal">
+        <button class="btn btn-ghost" onclick="Modal.close('modal-customer-detail')">Close</button>
+        <button class="btn btn-ghost" id="detailStatementBtn" onclick="API.customerStatement(currentCustomerId)">📄 Statement</button>
+        <button class="btn btn-primary" id="detailNewLoanBtn">💰 New Loan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="customers.js"></script>
+</body>
+</html>

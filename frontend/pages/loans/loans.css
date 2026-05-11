@@ -1,0 +1,74 @@
+/* loans.css — page-specific styles for loans.html */
+
+/* ── Loan status colouring ─── */
+.loan-bal-positive { color: var(--gold); }
+.loan-bal-zero     { color: var(--text3); }
+
+/* ── Credit score bar ─── */
+.score-cell       { display: flex; align-items: center; gap: 8px; }
+.score-track      { background: var(--surface2); border-radius: 4px; height: 6px; width: 60px; overflow: hidden; }
+.score-fill       { height: 100%; border-radius: 4px; }
+.score-fill-high  { background: var(--brand); }
+.score-fill-mid   { background: var(--gold); }
+.score-fill-low   { background: var(--red); }
+.score-num        { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.score-num-high   { color: var(--brand); }
+.score-num-mid    { color: var(--gold); }
+.score-num-low    { color: var(--red); }
+
+/* ── Loan detail modal ─── */
+.loan-detail-header {
+  padding: 20px 24px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.loan-detail-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--brand);
+  margin-bottom: 4px;
+}
+.loan-detail-name  { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; }
+.loan-detail-meta  { font-size: 12px; color: var(--text2); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+.loan-amounts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 16px;
+}
+.loan-amount-cell {
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.loan-amount-cell:last-child { border-right: none; }
+.loan-amount-label { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.loan-amount-value { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; }
+
+/* ── Document action buttons ─── */
+.loan-doc-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-demand       { color: var(--red); border-color: rgba(240,96,96,0.3); }
+
+/* ── Repayment schedule ─── */
+.schedule-wrap       { max-width: 680px; margin: 16px auto; }
+.schedule-row-overdue td { background: rgba(240,96,96,0.05); }
+.schedule-row-current td { background: rgba(0,152,161,0.05); }
+
+/* ── New loan form ─── */
+.loan-calc-box {
+  background: var(--brand-dim);
+  border: 1px solid var(--brand-glow);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-top: 12px;
+}
+.loan-calc-row      { display: flex; justify-content: space-between; font-size: 12.5px; padding: 4px 0; }
+.loan-calc-total    { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 6px; font-weight: 700; font-size: 14px; }
+.loan-calc-rate-note { font-size: 11px; color: var(--text3); margin-top: 6px; }

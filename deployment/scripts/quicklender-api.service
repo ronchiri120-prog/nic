@@ -1,0 +1,23 @@
+[Unit]
+Description=QuickLender Django API (Gunicorn)
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=notify
+User=quicklender
+Group=quicklender
+RuntimeDirectory=quicklender
+WorkingDirectory=/var/www/quicklender/backend
+Environment=DJANGO_ENV=production
+EnvironmentFile=/etc/quicklender/.env
+ExecStart=/var/www/quicklender/venv/bin/gunicorn     -c /var/www/quicklender/deployment/gunicorn.conf.py     quicklender_project.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
