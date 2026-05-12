@@ -1,4 +1,0 @@
-/* mpesa.css — page-specific styles for mpesa.html */
-
-.mpesa-api-status   { font-size: 11px; color: var(--text2); margin-left: 8px; display: flex; align-items: center; gap: 6px; }
-.mpesa-c2b-url      { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--brand); }

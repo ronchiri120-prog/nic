@@ -1,5 +1,0 @@
-/* assets.css — page-specific styles for assets.html */
-
-.ltv-safe   { color: var(--brand); }
-.ltv-warn   { color: var(--gold); }
-.ltv-danger { color: var(--red); }

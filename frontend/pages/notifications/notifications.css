@@ -1,8 +1,0 @@
-/* notifications.css — page-specific styles for notifications.html */
-
-.sms-template-chip  { font-size: 9px; }
-.sms-msg-preview    { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--text2); }
-.notif-stats-box    { margin-bottom: 20px; }
-.sms-char-counter   { text-align: right; font-size: 10px; color: var(--text3); margin-top: 3px; }
-.at-status-row      { display: flex; justify-content: space-between; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid rgba(30,37,53,0.6); }
-.at-status-row:last-child { border-bottom: none; }
